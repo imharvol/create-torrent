@@ -1,4 +1,5 @@
 /*! create-torrent. MIT License. WebTorrent LLC <https://webtorrent.io/opensource> */
+import crypto from 'node:crypto';
 import bencode from 'bencode'
 import blockIterator from 'block-iterator'
 import calcPieceLength from 'piece-length'
@@ -322,7 +323,12 @@ function onFiles (files, opts, cb) {
         torrent.info.files = files
       }
 
-      cb(null, bencode.encode(torrent))
+      const bencodedInfo = bencode.encode(torrent.info)
+      const sha1InfoHash = crypto.createHash('sha1')
+      sha1InfoHash.update(bencodedInfo)
+      const infoHash = sha1InfoHash.digest('hex')
+
+      cb(null, bencode.encode(torrent), torrent, infoHash)
     }
   )
 }
